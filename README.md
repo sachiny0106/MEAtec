@@ -1,170 +1,203 @@
-# Personal Habit Tracking & Streak Management REST API
+# 🎯 Habit Tracker API
 
-A backend-only habit tracker API built with Node.js, Express, TypeScript, and MongoDB.
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat&logo=node.js&logoColor=white)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-6.0-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Express](https://img.shields.io/badge/Express-5.x-000000?style=flat&logo=express&logoColor=white)](https://expressjs.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## Features
+> A RESTful API for tracking daily habits with streak management, built with Node.js, Express, TypeScript, and MongoDB.
 
-- **Authentication**: Register and Login with JWT.
-- **Habit Management**: Create, Read, Update, Delete habits.
-- **Tracking**: Mark habits as completed for the day and view history.
-- **Security**: Password hashing with bcrypt, route protection with JWT.
-- **API Documentation**: Swagger UI at `/api-docs`
+---
 
-## Technologies
+## ✨ Features
 
-- Node.js
-- Express
-- TypeScript
-- MongoDB (Mongoose)
-- JWT (JSON Web Tokens)
-- Bcrypt
-- Day.js
-- Jest + Supertest (Testing)
-- Swagger (API Documentation)
+| Feature | Description |
+|---------|-------------|
+| 🔐 **Authentication** | JWT-based auth with bcrypt password hashing |
+| 📝 **Habit CRUD** | Create, read, update, delete habits |
+| ✅ **Daily Tracking** | Mark habits complete (once per day) |
+| 🔥 **Streaks** | Auto-calculated consecutive day streaks |
+| 🏷️ **Tags & Filtering** | Organize habits with tags, filter by tag |
+| 📄 **Pagination** | Paginated habit lists |
+| ⏰ **Reminders** | Store reminder times for habits |
+| 🛡️ **Rate Limiting** | 100 requests/hour per IP |
+| 📚 **Swagger Docs** | Interactive API docs at `/api-docs` |
+| 🧪 **Tested** | 13 unit tests with Jest |
 
-## Setup Instructions
+---
 
-1.  **Clone the repository**
-2.  **Install dependencies**
-    ```bash
-    npm install
-    ```
-3.  **Environment Variables**
-    Create a `.env` file in the root directory with the following content:
-    ```env
-    PORT=5000
-    MONGO_URI=mongodb://localhost:27017/habit-tracker
-    JWT_SECRET=your_jwt_secret_key
-    ```
-4.  **Run the server**
-    ```bash
-    npm run dev
-    ```
-    The server will start on `http://localhost:5000`.
+## 🛠️ Tech Stack
 
-5.  **Run tests**
-    ```bash
-    npm test
-    ```
+<p>
+  <img src="https://img.shields.io/badge/-Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white" />
+  <img src="https://img.shields.io/badge/-Express-000000?style=for-the-badge&logo=express&logoColor=white" />
+  <img src="https://img.shields.io/badge/-TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/-MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/-Jest-C21325?style=for-the-badge&logo=jest&logoColor=white" />
+  <img src="https://img.shields.io/badge/-Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black" />
+</p>
 
-6.  **API Documentation**
-    Open `http://localhost:5000/api-docs` in your browser to view Swagger UI.
+---
 
-## API Endpoints
+## 📋 Table of Contents
 
-### Authentication
+- [Quick Start](#-quick-start)
+- [API Endpoints](#-api-endpoints)
+- [Example Usage](#-example-usage)
+- [Database Schema](#-database-schema)
+- [JWT Authentication](#-jwt-authentication)
+- [Project Structure](#-project-structure)
 
-| Method | Endpoint | Description | Input |
-| :--- | :--- | :--- | :--- |
-| POST | `/api/auth/register` | Register a new user | `{ "name": "John", "email": "john@example.com", "password": "123" }` |
-| POST | `/api/auth/login` | Login user | `{ "email": "john@example.com", "password": "123" }` |
+---
 
-### Habits
+## 🚀 Quick Start
 
-*All habit routes require `Authorization: Bearer <token>` header.*
+### Prerequisites
+- Node.js 18+
+- MongoDB (local or Atlas)
 
-| Method | Endpoint | Description | Input |
-| :--- | :--- | :--- | :--- |
-| POST | `/api/habits` | Create a new habit | `{ "title": "Exercise", "description": "30 mins cardio", "frequency": "daily", "tags": ["health"], "reminderTime": "07:00" }` |
-| GET | `/api/habits` | Get all habits (Paginated) | Query Params: `?page=1&tag=health` |
-| GET | `/api/habits/:id` | Get a specific habit | - |
-| PUT | `/api/habits/:id` | Update a habit | `{ "title": "Gym", "tags": ["fitness"] }` |
-| DELETE | `/api/habits/:id` | Delete a habit | - |
+### Installation
 
-### Tracking
+```bash
+# Clone the repo
+git clone https://github.com/sachiny0106/MEAtec.git
+cd MEAtec
 
-*All tracking routes require `Authorization: Bearer <token>` header.*
+# Install dependencies
+npm install
+```
 
-| Method | Endpoint | Description | Input |
-| :--- | :--- | :--- | :--- |
-| POST | `/api/habits/:id/track` | Mark habit as done for today | - |
-| GET | `/api/habits/:id/history` | Get last 7 days of logs | - |
+### Environment Variables
 
-## Database Schema
+Create a `.env` file in the root:
 
-### User
-- `name`: String
-- `email`: String (Unique)
-- `password`: String (Hashed)
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/habit-tracker
+JWT_SECRET=your_super_secret_key_here
+```
 
-### Habit
-- `user`: ObjectId (Ref: User)
-- `title`: String
-- `description`: String
-- `frequency`: String ('daily' | 'weekly')
-- `streak`: Number
-- `longestStreak`: Number
-- `tags`: [String]
-- `reminderTime`: String
-- `createdAt`: Date
+### Run the Server
 
-### TrackingLog
-- `habit`: ObjectId (Ref: Habit)
-- `date`: Date
-- `completed`: Boolean
+```bash
+# Development (with hot reload)
+npm run dev
 
-## Example Requests & Responses
+# Production
+npm run build && npm start
 
-### Register
+# Run tests
+npm test
+```
+
+🎉 **Server running at** `http://localhost:5000`  
+📚 **API Docs at** `http://localhost:5000/api-docs`
+
+---
+
+## 📡 API Endpoints
+
+### 🔐 Authentication
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/register` | Register new user |
+| `POST` | `/api/auth/login` | Login & get token |
+
+### 📝 Habits
+
+> 🔒 All routes require `Authorization: Bearer <token>`
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/habits` | Create habit |
+| `GET` | `/api/habits` | List habits (paginated) |
+| `GET` | `/api/habits?tag=health` | Filter by tag |
+| `GET` | `/api/habits/:id` | Get single habit |
+| `PUT` | `/api/habits/:id` | Update habit |
+| `DELETE` | `/api/habits/:id` | Delete habit |
+
+### ✅ Tracking
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/habits/:id/track` | Mark done for today |
+| `GET` | `/api/habits/:id/history` | Last 7 days logs |
+
+---
+
+## 💡 Example Usage
+
+### 1️⃣ Register
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"name": "John", "email": "john@example.com", "password": "pass123"}'
+  -d '{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "password": "mypassword123"
+  }'
 ```
-Response:
+
+<details>
+<summary>📤 Response</summary>
+
 ```json
 {
   "_id": "6759a1b2c3d4e5f6a7b8c9d0",
-  "name": "John",
+  "name": "John Doe",
   "email": "john@example.com",
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 }
 ```
+</details>
 
-### Login
-```bash
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email": "john@example.com", "password": "pass123"}'
-```
-Response:
-```json
-{
-  "_id": "6759a1b2c3d4e5f6a7b8c9d0",
-  "name": "John",
-  "email": "john@example.com",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+### 2️⃣ Create Habit
 
-### Create Habit (with JWT)
 ```bash
 curl -X POST http://localhost:5000/api/habits \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <your_token>" \
-  -d '{"title": "Morning Run", "description": "5km jog", "frequency": "daily", "tags": ["health", "fitness"]}'
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "title": "Morning Run",
+    "description": "5km jog every morning",
+    "frequency": "daily",
+    "tags": ["health", "fitness"],
+    "reminderTime": "07:00"
+  }'
 ```
-Response:
+
+<details>
+<summary>📤 Response</summary>
+
 ```json
 {
   "_id": "6759b2c3d4e5f6a7b8c9d0e1",
   "user": "6759a1b2c3d4e5f6a7b8c9d0",
   "title": "Morning Run",
-  "description": "5km jog",
+  "description": "5km jog every morning",
   "frequency": "daily",
   "streak": 0,
   "longestStreak": 0,
   "tags": ["health", "fitness"],
+  "reminderTime": "07:00",
   "createdAt": "2025-12-11T10:00:00.000Z"
 }
 ```
+</details>
 
-### Track Habit
+### 3️⃣ Track Habit
+
 ```bash
-curl -X POST http://localhost:5000/api/habits/<habit_id>/track \
-  -H "Authorization: Bearer <your_token>"
+curl -X POST http://localhost:5000/api/habits/HABIT_ID/track \
+  -H "Authorization: Bearer YOUR_TOKEN"
 ```
-Response:
+
+<details>
+<summary>📤 Response</summary>
+
 ```json
 {
   "log": {
@@ -177,12 +210,96 @@ Response:
   "longestStreak": 1
 }
 ```
+</details>
 
-## JWT Usage
+---
 
-1. Register or Login to get a token
-2. Add the token to the `Authorization` header for all protected routes:
-   ```
-   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-   ```
-3. Token expires in 30 days
+## 🗃️ Database Schema
+
+```
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│    User     │       │    Habit    │       │ TrackingLog │
+├─────────────┤       ├─────────────┤       ├─────────────┤
+│ _id         │──────<│ user        │       │ _id         │
+│ name        │       │ _id         │──────<│ habit       │
+│ email       │       │ title       │       │ date        │
+│ password    │       │ description │       │ completed   │
+│ createdAt   │       │ frequency   │       └─────────────┘
+└─────────────┘       │ streak      │
+                      │ longestStreak│
+                      │ tags[]      │
+                      │ reminderTime│
+                      │ createdAt   │
+                      └─────────────┘
+```
+
+---
+
+## 🔑 JWT Authentication
+
+1. **Register** or **Login** to get a token
+2. Add to all protected requests:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+3. Token expires in **30 days**
+
+---
+
+## 📁 Project Structure
+
+```
+src/
+├── __tests__/          # Jest test files
+├── config/
+│   ├── db.ts           # MongoDB connection
+│   └── swagger.ts      # Swagger config
+├── controllers/
+│   ├── authController.ts
+│   └── habitController.ts
+├── middleware/
+│   ├── authMiddleware.ts
+│   ├── errorHandler.ts
+│   └── rateLimiter.ts
+├── models/
+│   ├── User.ts
+│   ├── Habit.ts
+│   └── TrackingLog.ts
+├── routes/
+│   ├── authRoutes.ts
+│   └── habitRoutes.ts
+├── utils/
+│   └── generateToken.ts
+├── app.ts
+└── server.ts
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+npm test
+```
+
+```
+✓ Auth Routes (4 tests)
+✓ Habit Routes (9 tests)
+
+Test Suites: 2 passed
+Tests: 13 passed
+```
+
+---
+
+## 📝 License
+
+MIT © 2025
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/sachiny0106">Sachin</a>
+</p>
