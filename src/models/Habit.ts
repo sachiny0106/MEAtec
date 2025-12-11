@@ -9,7 +9,7 @@ export interface IHabit extends Document {
   streak: number;
   longestStreak: number;
   tags: string[];
-  reminderTime?: string;
+  reminderTime?: string; // optional, format "HH:MM"
   createdAt: Date;
 }
 
@@ -18,38 +18,21 @@ const HabitSchema: Schema = new Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'User',
+      ref: 'User'
     },
-    title: {
-      type: String,
-      required: true,
-    },
-    description: {
-      type: String,
-    },
+    title: { type: String, required: true },
+    description: { type: String },
     frequency: {
       type: String,
       enum: ['daily', 'weekly'],
-      default: 'daily',
+      default: 'daily'
     },
-    streak: {
-      type: Number,
-      default: 0,
-    },
-    longestStreak: {
-      type: Number,
-      default: 0,
-    },
-    tags: [{
-      type: String,
-    }],
-    reminderTime: {
-      type: String, // e.g., "09:00"
-    },
+    streak: { type: Number, default: 0 },
+    longestStreak: { type: Number, default: 0 },
+    tags: [{ type: String }],
+    reminderTime: { type: String } // e.g. "09:00"
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const Habit = mongoose.model<IHabit>('Habit', HabitSchema);

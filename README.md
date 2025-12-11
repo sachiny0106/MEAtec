@@ -102,3 +102,87 @@ A backend-only habit tracker API built with Node.js, Express, TypeScript, and Mo
 - `habit`: ObjectId (Ref: Habit)
 - `date`: Date
 - `completed`: Boolean
+
+## Example Requests & Responses
+
+### Register
+```bash
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John", "email": "john@example.com", "password": "pass123"}'
+```
+Response:
+```json
+{
+  "_id": "6759a1b2c3d4e5f6a7b8c9d0",
+  "name": "John",
+  "email": "john@example.com",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Login
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "john@example.com", "password": "pass123"}'
+```
+Response:
+```json
+{
+  "_id": "6759a1b2c3d4e5f6a7b8c9d0",
+  "name": "John",
+  "email": "john@example.com",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### Create Habit (with JWT)
+```bash
+curl -X POST http://localhost:5000/api/habits \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <your_token>" \
+  -d '{"title": "Morning Run", "description": "5km jog", "frequency": "daily", "tags": ["health", "fitness"]}'
+```
+Response:
+```json
+{
+  "_id": "6759b2c3d4e5f6a7b8c9d0e1",
+  "user": "6759a1b2c3d4e5f6a7b8c9d0",
+  "title": "Morning Run",
+  "description": "5km jog",
+  "frequency": "daily",
+  "streak": 0,
+  "longestStreak": 0,
+  "tags": ["health", "fitness"],
+  "createdAt": "2025-12-11T10:00:00.000Z"
+}
+```
+
+### Track Habit
+```bash
+curl -X POST http://localhost:5000/api/habits/<habit_id>/track \
+  -H "Authorization: Bearer <your_token>"
+```
+Response:
+```json
+{
+  "log": {
+    "_id": "6759c3d4e5f6a7b8c9d0e1f2",
+    "habit": "6759b2c3d4e5f6a7b8c9d0e1",
+    "date": "2025-12-11T00:00:00.000Z",
+    "completed": true
+  },
+  "streak": 1,
+  "longestStreak": 1
+}
+```
+
+## JWT Usage
+
+1. Register or Login to get a token
+2. Add the token to the `Authorization` header for all protected routes:
+   ```
+   Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+   ```
+3. Token expires in 30 days
