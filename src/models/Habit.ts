@@ -20,16 +20,16 @@ const HabitSchema: Schema = new Schema(
       required: true,
       ref: 'User'
     },
-    title: { type: String, required: true },
-    description: { type: String },
+    title: { type: String, required: true }, // habit name
+    description: { type: String }, // optional
     frequency: {
       type: String,
       enum: ['daily', 'weekly'],
-      default: 'daily'
+      default: 'daily' // default to daily
     },
-    streak: { type: Number, default: 0 },
-    longestStreak: { type: Number, default: 0 },
-    tags: [{ type: String }],
+    streak: { type: Number, default: 0 }, // current streak
+    longestStreak: { type: Number, default: 0 }, // best streak
+    tags: [{ type: String }], // e.g. ["health", "work"]
     reminderTime: { type: String } // e.g. "09:00"
   },
   { timestamps: true }

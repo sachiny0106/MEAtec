@@ -17,15 +17,15 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true }
 );
 
-// hash password before saving
+// hash password before saving (only if changed)
 UserSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-  
+  // console.log('Hashing password for', this.email);
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// compare entered password with hashed one in db
+// check password
 UserSchema.methods.matchPassword = async function (enteredPassword: string) {
   return bcrypt.compare(enteredPassword, this.password);
 };

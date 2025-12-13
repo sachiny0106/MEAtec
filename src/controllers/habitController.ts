@@ -3,10 +3,11 @@ import Habit from '../models/Habit';
 import TrackingLog from '../models/TrackingLog';
 import dayjs from 'dayjs';
 
-// helper to check if user is authorized
+// quick helper to check auth (returns false if not logged in)
 const checkAuth = (req: Request, res: Response): boolean => {
   if (!req.user) {
     res.status(401).json({ message: 'User not found' });
+    // TODO: maybe redirect to login page if this was a frontend
     return false;
   }
   return true;
@@ -18,10 +19,12 @@ const checkAuth = (req: Request, res: Response): boolean => {
  */
 export const createHabit = async (req: Request, res: Response) => {
   if (!checkAuth(req, res)) return;
-  
-  const { title, description, frequency, tags, reminderTime } = req.body;
 
-  const habit = await Habit.create({
+  // destructure with fallback for tags
+  const { title, description, frequency, tags = [], reminderTime } = req.body;
+
+  // console.log('Creating habit for user:', req.user?._id);
+  const newHabit = await Habit.create({
     user: req.user!._id,
     title,
     description,
@@ -30,7 +33,7 @@ export const createHabit = async (req: Request, res: Response) => {
     reminderTime
   });
 
-  res.status(201).json(habit);
+  res.status(201).json(newHabit);
 };
 
 /*
@@ -41,25 +44,25 @@ export const createHabit = async (req: Request, res: Response) => {
 export const getHabits = async (req: Request, res: Response) => {
   if (!checkAuth(req, res)) return;
 
-  const pageSize = 10; // items per page
-  const page = Number(req.query.page) || 1;
+  const pageSize = 10;
+  const pageNum = Number(req.query.page) || 1;
   const tag = req.query.tag as string;
 
   // build query based on whether tag filter is applied
-  let query: any = { user: req.user!._id };
+  let filter: any = { user: req.user!._id };
   if (tag) {
-    query.tags = tag;
+    filter.tags = tag;
   }
 
-  const count = await Habit.countDocuments(query);
-  const habits = await Habit.find(query)
+  const total = await Habit.countDocuments(filter);
+  const habits = await Habit.find(filter)
     .limit(pageSize)
-    .skip(pageSize * (page - 1));
+    .skip(pageSize * (pageNum - 1));
 
   res.json({ 
     habits, 
-    page, 
-    pages: Math.ceil(count / pageSize) 
+    page: pageNum, 
+    pages: Math.ceil(total / pageSize) 
   });
 };
 
@@ -74,7 +77,7 @@ export const getHabitById = async (req: Request, res: Response) => {
     return;
   }
 
-  // make sure user owns this habit
+  // only allow owner to view
   if (habit.user.toString() !== req.user!._id.toString()) {
     res.status(401).json({ message: 'Not authorized' });
     return;
@@ -99,15 +102,16 @@ export const updateHabit = async (req: Request, res: Response) => {
     return;
   }
 
-  // update fields if provided
-  habit.title = req.body.title || habit.title;
-  habit.description = req.body.description || habit.description;
-  habit.frequency = req.body.frequency || habit.frequency;
-  habit.tags = req.body.tags || habit.tags;
-  habit.reminderTime = req.body.reminderTime || habit.reminderTime;
+  // update only provided fields
+  const { title, description, frequency, tags, reminderTime } = req.body;
+  if (title) habit.title = title;
+  if (description) habit.description = description;
+  if (frequency) habit.frequency = frequency;
+  if (tags) habit.tags = tags;
+  if (reminderTime) habit.reminderTime = reminderTime;
 
-  const updated = await habit.save();
-  res.json(updated);
+  const updatedHabit = await habit.save();
+  res.json(updatedHabit);
 };
 
 // delete habit
@@ -127,6 +131,7 @@ export const deleteHabit = async (req: Request, res: Response) => {
   }
 
   await habit.deleteOne();
+  // FIXME: maybe also delete related tracking logs?
   res.json({ message: 'Habit removed' });
 };
 
@@ -153,24 +158,24 @@ export const trackHabit = async (req: Request, res: Response) => {
   const yesterday = dayjs().subtract(1, 'day').startOf('day').toDate();
 
   // check if already tracked today
-  const alreadyTracked = await TrackingLog.findOne({
+  const logToday = await TrackingLog.findOne({
     habit: habit._id,
     date: today
   });
 
-  if (alreadyTracked) {
+  if (logToday) {
     res.status(400).json({ message: 'Habit already tracked for today' });
     return;
   }
 
   // streak logic: if tracked yesterday, increment; otherwise reset to 1
-  const trackedYesterday = await TrackingLog.findOne({
+  const logYesterday = await TrackingLog.findOne({
     habit: habit._id,
     date: yesterday
   });
 
-  habit.streak = trackedYesterday ? habit.streak + 1 : 1;
-  
+  habit.streak = logYesterday ? habit.streak + 1 : 1;
+
   // update longest streak if needed
   if (habit.streak > habit.longestStreak) {
     habit.longestStreak = habit.streak;

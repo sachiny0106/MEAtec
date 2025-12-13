@@ -10,28 +10,28 @@ export const registerUser = async (req: Request, res: Response) => {
   try {
     const { name, email, password } = req.body;
 
-    // check if email already taken
-    const userExists = await User.findOne({ email });
-    if (userExists) {
+    // see if user already exists
+    const foundUser = await User.findOne({ email });
+    if (foundUser) {
       res.status(400).json({ message: 'User already exists' });
       return;
     }
 
-    // create user - password gets hashed in the model pre-save hook
-    const user = await User.create({ name, email, password });
+    // create user (password will be hashed by model)
+    const createdUser = await User.create({ name, email, password });
 
-    if (user) {
+    if (createdUser) {
       res.status(201).json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        token: generateToken(user._id.toString()),
+        _id: createdUser._id,
+        name: createdUser.name,
+        email: createdUser.email,
+        token: generateToken(createdUser._id.toString()),
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
     }
   } catch (err) {
-    console.error(err);
+    // console.log('Register error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -44,10 +44,11 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // find user and verify password
+    // try to find user and check password
     const user = await User.findOne({ email });
 
     if (user && (await user.matchPassword(password))) {
+      // success
       res.json({
         _id: user._id,
         name: user.name,
@@ -58,7 +59,7 @@ export const loginUser = async (req: Request, res: Response) => {
       res.status(401).json({ message: 'Invalid email or password' });
     }
   } catch (err) {
-    console.error(err);
+    // console.error('Login error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };

@@ -12,16 +12,16 @@ const TrackingLogSchema: Schema = new Schema(
     habit: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: 'Habit',
+      ref: 'Habit', // link to habit
     },
     date: {
       type: Date,
       required: true,
-    },
+    }, // only one per day
     completed: {
       type: Boolean,
       default: true,
-    },
+    }, // always true for now
   },
   {
     timestamps: true,
